@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini React-like useState Vanilla JS</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 8px 16px; margin: 5px; font-size: 16px; }
+    span { font-size: 24px; margin: 0 10px; display: inline-block; min-width: 40px; }
+  </style>
+</head>
+<body>
+  <h2>Counter (React-like useState)</h2>
+
+  <script>
+    // ==== Mini React-like useState ====
+    function createElement(tag, props = {}, ...children) {
+      const el = document.createElement(tag);
+
+      // set props / events
+      for (let key in props) {
+        if (key.startsWith("on") && typeof props[key] === "function") {
+          const event = key.slice(2).toLowerCase();
+          el.addEventListener(event, props[key]);
+        } else {
+          el[key] = props[key];
+        }
+      }
+
+      // append children
+      children.flat().forEach(child => {
+        if (typeof child === "string" || typeof child === "number") {
+          el.appendChild(document.createTextNode(child));
+        } else if (child instanceof Node) {
+          el.appendChild(child);
+        }
+      });
+
+      return el;
+    }
+
+    function useState(initialValue) {
+      let value = initialValue;
+      const listeners = [];
+
+      function set(newValue) {
+        value = newValue;
+        
+        listeners.forEach(fn =>{
+        
+            
+           return fn(value);
+        } );
+      }
+
+      function get() { return value; }
+
+      function bind(fn) {
+        listeners.push(fn);
+        fn(value); // initial render
+      }
+
+      return [get, set, bind];
+    }
+
+    // ==== Usage like React ====
+    const [count, setCount, bindCount] = useState(0);
+
+    const countSpan = createElement("span");
+    bindCount(val => { countSpan.textContent = val; });
+
+    const decBtn = createElement("button", { onClick: () => setCount(count() - 1) }, "-");
+    const incBtn = createElement("button", { onClick: () => setCount(count() + 1) }, "+");
+    const resetBtn = createElement("button", { onClick: () => setCount(0) }, "Reset");
+
+    // Append to body
+    document.body.appendChild(decBtn);
+    document.body.appendChild(countSpan);
+    document.body.appendChild(incBtn);
+    document.body.appendChild(resetBtn);
+  </script>
+</body>
+</html>
