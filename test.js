@@ -8,6 +8,8 @@ function createStore(initialState) {
       subscribers.forEach((cb) => cb(state)); 
     },
     subscribe: (cb) => {
+        console.log(cb);
+        
       subscribers.push(cb);
       cb(state);
     }

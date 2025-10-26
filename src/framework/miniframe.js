@@ -111,11 +111,13 @@ export const MiniFrame = {
       getState: () => state,
       update: (newState) => {
         state = { ...state, ...newState };
-        subscribers.forEach((cb) => cb(state));
+        subscribers.forEach((cb) => cb(state));        
       },
-      subscribe: (cb) => {        
+      subscribe: (cb) => {   
+        console.log(cb);
+             
         subscribers.push(cb);
-        cb(state);
+           cb(state);
         return () => {
           subscribers = subscribers.filter((s) => s !== cb);
         };
@@ -147,14 +149,16 @@ export const MiniFrame = {
 
   router: {
     routes: new Map(),
-    addRoute(path, renderFn) {
+    addRoute(path, renderFn) {      
+      console.log(this.routes);
+      
       this.routes.set(path, renderFn);
     },
     start(container) {
       const navigate = () => {
         const path = window.location.hash || '#all';
         const renderFn = this.routes.get(path) || this.routes.get('#all');
-        if (renderFn) {
+        if (renderFn) {          
           const vNode = renderFn();
           MiniFrame.render(vNode, container);
         }
