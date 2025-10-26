@@ -4,7 +4,6 @@ export const store = MiniFrame.createStore({
   todos: [],
   filter: 'all'
 });
-
 export function createTodoApp(state) {
   const { todos, filter } = state;
 

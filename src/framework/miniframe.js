@@ -113,7 +113,7 @@ export const MiniFrame = {
         state = { ...state, ...newState };
         subscribers.forEach((cb) => cb(state));
       },
-      subscribe: (cb) => {
+      subscribe: (cb) => {        
         subscribers.push(cb);
         cb(state);
         return () => {

@@ -3,7 +3,7 @@ import { createTodoApp, store } from './todo.js';
 
 const root = document.getElementById('root');
 
-store.subscribe((state) => {
+store.subscribe((state) => {    
   const vNode = createTodoApp(state);
   MiniFrame.render(vNode, root);
 });
