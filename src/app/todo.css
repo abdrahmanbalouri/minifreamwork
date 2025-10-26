@@ -1,0 +1,131 @@
+.todoapp {
+  max-width: 550px;
+  margin: 130px auto 40px;
+  background: #fff;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  font-size: 100px;
+  font-weight: 100;
+  text-align: center;
+  color: rgba(175, 47, 47, 0.15);
+}
+
+.new-todo {
+  padding: 16px;
+  width: 100%;
+  font-size: 24px;
+  border: none;
+  box-shadow: inset 0 -2px 1px rgba(0, 0, 0, 0.03);
+}
+
+.main {
+  position: relative;
+  border-top: 1px solid #e6e6e6;
+}
+
+.toggle-all {
+  position: absolute;
+  top: -55px;
+  left: -12px;
+  width: 60px;
+  height: 34px;
+}
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.todo-list li {
+  position: relative;
+  font-size: 24px;
+  border-bottom: 1px solid #ededed;
+}
+
+.todo-list li .toggle {
+  text-align: center;
+  width: 40px;
+  height: auto;
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  margin: auto 0;
+}
+
+.todo-list li label {
+  word-break: break-all;
+  padding: 15px 15px 15px 60px;
+  display: block;
+}
+
+.todo-list li.completed label {
+  color: #d9d9d9;
+  text-decoration: line-through;
+}
+
+.todo-list li .destroy {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 10px;
+  bottom: 0;
+  width: 40px;
+  height: 40px;
+  margin: auto 0;
+  font-size: 30px;
+  color: #cc9a9a;
+  cursor: pointer;
+}
+
+.todo-list li:hover .destroy {
+  display: block;
+}
+
+.footer {
+  color: #777;
+  padding: 10px 15px;
+  height: 20px;
+  text-align: center;
+  border-top: 1px solid #e6e6e6;
+}
+
+.todo-count {
+  float: left;
+  text-align: left;
+}
+
+.filters {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  right: 0;
+  left: 0;
+}
+
+.filters li {
+  display: inline;
+}
+
+.filters li a {
+  color: inherit;
+  margin: 3px;
+  padding: 3px 7px;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.filters li a.selected {
+  border-color: rgba(175, 47, 47, 0.2);
+}
+
+.clear-completed {
+  float: right;
+  position: relative;
+  line-height: 20px;
+  text-decoration: none;
+  cursor: pointer;
+}
