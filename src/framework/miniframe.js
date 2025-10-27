@@ -113,10 +113,10 @@ export const MiniFrame = {
 
     const oldAttrs = oldVNode.attrs || {};
     const newAttrs = newVNode.attrs || {};
+    console.log(newAttrs);
+    
 
-    Object.keys(newAttrs).forEach(key => {
-      console.log(key);
-      
+    Object.keys(newAttrs).forEach(key => {      
       const oldValue = oldAttrs[key];
       const newValue = newAttrs[key];
       if (oldValue !== newValue) {
@@ -150,7 +150,6 @@ export const MiniFrame = {
       }
     });
 
-    // 7. تحديث الـ Events
     const oldEvents = oldVNode.events || {};
     const newEvents = newVNode.events || {};
 
