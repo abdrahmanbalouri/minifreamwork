@@ -115,6 +115,8 @@ export const MiniFrame = {
     const newAttrs = newVNode.attrs || {};
 
     Object.keys(newAttrs).forEach(key => {
+      console.log(key);
+      
       const oldValue = oldAttrs[key];
       const newValue = newAttrs[key];
       if (oldValue !== newValue) {
