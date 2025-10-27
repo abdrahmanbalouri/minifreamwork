@@ -2,17 +2,40 @@ import { MiniFrame } from '../framework/miniframe.js';
 
 export const store = MiniFrame.createStore({
   todos: [],
-  filter: 'all'
+  filter: 'all',
+  editingId: null 
 });
 
 export function createTodoApp(state) {
-  const { todos, filter } = state;
+  const { todos, filter, editingId } = state; 
 
   const filteredTodos = todos.filter((todo) => {
     if (filter === 'active') return !todo.completed;
     if (filter === 'completed') return todo.completed;
     return true;
   });
+  
+  const handleEditInput = (e, todo) => {
+    if (e.key === 'Enter' || e.type === 'blur') {
+      const newText = e.target.value.trim();
+      
+      if (newText) {
+        store.update({
+          todos: todos.map(t =>
+            t.id === todo.id ? { ...t, text: newText } : t
+          ),
+          editingId: null 
+        });
+      } else if (e.type === 'blur') {
+        store.update({
+          todos: todos.filter(t => t.id !== todo.id),
+          editingId: null
+        });
+      }
+    } else if (e.key === 'Escape') {
+      store.update({ editingId: null });
+    }
+  };
 
   return MiniFrame.createElement({
     tag: 'section',
@@ -81,15 +104,33 @@ export function createTodoApp(state) {
           {
             tag: 'ul',
             attrs: { class: 'todo-list' },
-            children: filteredTodos.map(todo =>
-              MiniFrame.createElement({
-                tag: 'li',
-                attrs: {
-                  class: todo.completed ? 'completed' : '',
-                  'data-id': todo.id,
-                  key: todo.id
-                },
-                children: [
+            children: filteredTodos.map(todo => {
+              
+              const isEditing = todo.id === editingId; 
+              
+              let liChildren;
+              
+              if (isEditing) {
+                liChildren = [
+                  {
+                    tag: 'input',
+                    attrs: {
+                      class: 'edit',
+                      value: todo.text,
+                    },
+                    events: {
+                      keydown: (e) => handleEditInput(e, todo),
+                      blur: (e) => handleEditInput(e, todo)
+                    }
+                  }
+                ];
+                            setTimeout(() => {
+                  const editInput = document.querySelector(`li[data-id="${todo.id}"] .edit`);
+                  if (editInput) editInput.focus();
+                }, 0);
+
+              } else {
+                liChildren = [
                   {
                     tag: 'div',
                     attrs: { class: 'view' },
@@ -115,45 +156,8 @@ export function createTodoApp(state) {
                         tag: 'label',
                         children: [todo.text || ''],
                         events: {
-                          dblclick: (e) => {
-                            const li = e.target.closest('li');
-                            li.classList.add('editing');
-
-                            const editInput = document.createElement('input');
-                            editInput.className = 'edit';
-                            editInput.value = todo.text;
-
-                            editInput.addEventListener('keydown', (editEvent) => {
-                              if (editEvent.key === 'Enter') {
-                                const newText = editInput.value.trim();
-                                if (newText) {
-                                  store.update({
-                                    todos: todos.map(t =>
-                                      t.id === todo.id ? { ...t, text: newText } : t
-                                    )
-                                  });
-                                  li.classList.remove('editing');
-                                }
-                              } else if (editEvent.key === 'Escape') {
-                                li.classList.remove('editing');
-                              }
-                            });
-
-                            editInput.addEventListener('blur', () => {
-                              const newText = editInput.value.trim();
-                              if (newText) {
-                                store.update({
-                                  todos: todos.map(t =>
-                                    t.id === todo.id ? { ...t, text: newText } : t
-                                  )
-                                });
-                              }
-                              li.classList.remove('editing');
-                            });
-
-                            // Ajouter l'input d'édition au li
-                            li.appendChild(editInput);
-                            editInput.focus();
+                          dblclick: () => {
+                            store.update({ editingId: todo.id });
                           }
                         }
                       },
@@ -170,9 +174,19 @@ export function createTodoApp(state) {
                       }
                     ]
                   }
-                ]
-              })
-            )
+                ];
+              }
+              
+              return MiniFrame.createElement({
+                tag: 'li',
+                attrs: {
+                  class: `${todo.completed ? 'completed' : ''} ${isEditing ? 'editing' : ''}`,
+                  'data-id': todo.id,
+                  key: todo.id 
+                },
+                children: liChildren
+              });
+            }) 
           }
         ]
       },
@@ -180,7 +194,7 @@ export function createTodoApp(state) {
         tag: 'footer',
         attrs: {
           class: 'footer',
-          style: { display: todos.length ? 'block' : 'none' } // ✅ Style en objet
+          style: { display: todos.length ? 'block' : 'none' }
         },
         children: [
           {
@@ -239,11 +253,11 @@ export function createTodoApp(state) {
             tag: 'button',
             attrs: {
               class: 'clear-completed',
-              style: { display: todos.some(t => t.completed) ? 'block' : 'none' } // ✅ Style en objet
+              style: { display: todos.some(t => t.completed) ? 'block' : 'none' }
             },
             children: ['Clear completed'],
             events: {
-              click: () => {  // ✅ Changé 'onclick' en 'click'
+              click: () => {  
                 store.update({ todos: todos.filter(t => !t.completed) });
               }
             }
