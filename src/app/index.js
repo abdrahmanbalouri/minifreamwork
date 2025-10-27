@@ -10,15 +10,14 @@ if (!root) {
 let oldVNode = null;
 
 store.subscribe((state) => {
-  const vNode = createTodoApp(state);
-  
+  // hna bagh  nkhali  route  dinamique  hit  t9ad tkon 3andi haja khra mn  ghir craetetodo  onbghit  hiya  nkhdma  khsni 3la hsab route  nkhdam chihaja 
+  const vNode = createTodoApp(state,state.route);
   MiniFrame.render(vNode, root, oldVNode);
-  
-  oldVNode = vNode; 
+  oldVNode = vNode;
 });
 
-MiniFrame.router.addRoute('#all', () => store.update({ filter: 'all' }));
-MiniFrame.router.addRoute('#active', () => store.update({ filter: 'active' }));
-MiniFrame.router.addRoute('#completed', () => store.update({ filter: 'completed' }));
+MiniFrame.router.addRoute('#all', () => store.update({ route: 'all' }));
+MiniFrame.router.addRoute('#active', () => store.update({ route: 'active' }));
+MiniFrame.router.addRoute('#completed', () => store.update({ route: 'completed' }));
 
 MiniFrame.router.start();

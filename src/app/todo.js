@@ -2,12 +2,13 @@ import { MiniFrame } from '../framework/miniframe.js';
 
 export const store = MiniFrame.createStore({
   todos: [],
-  filter: 'all',
-  editingId: null 
+  editingId: null ,
+  route : "all"
 });
 
-export function createTodoApp(state) {
-  const { todos, filter, editingId } = state; 
+export function createTodoApp(state ,filter ) {
+  const { todos, editingId  } = state; 
+  
 
   const filteredTodos = todos.filter((todo) => {
     if (filter === 'active') return !todo.completed;
