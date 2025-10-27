@@ -7,9 +7,7 @@ function createStore(initialState) {
       state = { ...state, ...newState };
       subscribers.forEach((cb) => cb(state)); 
     },
-    subscribe: (cb) => {
-        console.log(cb);
-        
+    subscribe: (cb) => { 
       subscribers.push(cb);
       cb(state);
     }
@@ -19,7 +17,6 @@ function createStore(initialState) {
 const store = createStore({ count: 0 });
 
 store.subscribe((state) => {
-  console.log(state,"--------------");
 });
 
 store.update({ count: 1 }); 

@@ -9,6 +9,7 @@ export const MiniFrame = {
       const element = this._createRealDOM(vNode);
       container.appendChild(element);
     } else {
+      
       this.updateDOM(oldVNode, vNode, container);
     }
   },
@@ -80,6 +81,8 @@ export const MiniFrame = {
     }
 
     let element = parent.firstChild;
+    console.log(element);
+    
     if (!element) {
       element = this._createRealDOM(newVNode);
       parent.appendChild(element);
@@ -177,9 +180,9 @@ export const MiniFrame = {
       subscribe: (cb) => {             
         subscribers.push(cb);
         cb(state);
-        return () => {
-          subscribers = subscribers.filter((s) => s !== cb);
-        };
+        // return () => {
+        //   subscribers = subscribers.filter((s) => s !== cb);
+        // };
       }
     };
   },
