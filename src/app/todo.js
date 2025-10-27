@@ -4,6 +4,7 @@ export const store = MiniFrame.createStore({
   todos: [],
   filter: 'all'
 });
+
 export function createTodoApp(state) {
   const { todos, filter } = state;
 
@@ -30,12 +31,16 @@ export function createTodoApp(state) {
               autofocus: true
             },
             events: {
-              keypress: (e) => {
+              keydown: (e) => {  
                 if (e.key === 'Enter' && e.target.value.trim()) {
                   store.update({
                     todos: [
                       ...todos,
-                      { id: Date.now(), text: e.target.value.trim(), completed: false }
+                      {
+                        id: Date.now(),
+                        text: e.target.value.trim(),  
+                        completed: false
+                      }
                     ]
                   });
                   e.target.value = '';
@@ -47,7 +52,10 @@ export function createTodoApp(state) {
       },
       {
         tag: 'section',
-        attrs: { class: 'main', style: todos.length ? '' : 'display: none' },
+        attrs: {
+          class: 'main',
+          style: { display: todos.length ? 'block' : 'none' } 
+        },
         children: [
           {
             tag: 'input',
@@ -65,7 +73,11 @@ export function createTodoApp(state) {
               }
             }
           },
-          { tag: 'label', attrs: { for: 'toggle-all' }, children: ['Mark all as complete'] },
+          {
+            tag: 'label',
+            attrs: { htmlFor: 'toggle-all' }, 
+            children: ['Mark all as complete']
+          },
           {
             tag: 'ul',
             attrs: { class: 'todo-list' },
@@ -74,7 +86,8 @@ export function createTodoApp(state) {
                 tag: 'li',
                 attrs: {
                   class: todo.completed ? 'completed' : '',
-                  'data-id': todo.id
+                  'data-id': todo.id,
+                  key: todo.id
                 },
                 children: [
                   {
@@ -83,7 +96,11 @@ export function createTodoApp(state) {
                     children: [
                       {
                         tag: 'input',
-                        attrs: { class: 'toggle', type: 'checkbox', checked: todo.completed },
+                        attrs: {
+                          class: 'toggle',
+                          type: 'checkbox',
+                          checked: todo.completed
+                        },
                         events: {
                           change: () => {
                             store.update({
@@ -94,7 +111,52 @@ export function createTodoApp(state) {
                           }
                         }
                       },
-                      { tag: 'label', children: [todo.text] },
+                      {
+                        tag: 'label',
+                        children: [todo.text || ''],
+                        events: {
+                          dblclick: (e) => {
+                            const li = e.target.closest('li');
+                            li.classList.add('editing');
+
+                            const editInput = document.createElement('input');
+                            editInput.className = 'edit';
+                            editInput.value = todo.text;
+
+                            editInput.addEventListener('keydown', (editEvent) => {
+                              if (editEvent.key === 'Enter') {
+                                const newText = editInput.value.trim();
+                                if (newText) {
+                                  store.update({
+                                    todos: todos.map(t =>
+                                      t.id === todo.id ? { ...t, text: newText } : t
+                                    )
+                                  });
+                                  li.classList.remove('editing');
+                                }
+                              } else if (editEvent.key === 'Escape') {
+                                li.classList.remove('editing');
+                              }
+                            });
+
+                            editInput.addEventListener('blur', () => {
+                              const newText = editInput.value.trim();
+                              if (newText) {
+                                store.update({
+                                  todos: todos.map(t =>
+                                    t.id === todo.id ? { ...t, text: newText } : t
+                                  )
+                                });
+                              }
+                              li.classList.remove('editing');
+                            });
+
+                            // Ajouter l'input d'édition au li
+                            li.appendChild(editInput);
+                            editInput.focus();
+                          }
+                        }
+                      },
                       {
                         tag: 'button',
                         attrs: { class: 'destroy' },
@@ -116,7 +178,10 @@ export function createTodoApp(state) {
       },
       {
         tag: 'footer',
-        attrs: { class: 'footer', style: todos.length ? '' : 'display: none' },
+        attrs: {
+          class: 'footer',
+          style: { display: todos.length ? 'block' : 'none' } // ✅ Style en objet
+        },
         children: [
           {
             tag: 'span',
@@ -129,17 +194,56 @@ export function createTodoApp(state) {
             tag: 'ul',
             attrs: { class: 'filters' },
             children: [
-              { tag: 'li', children: [{ tag: 'a', attrs: { href: '#all', class: filter === 'all' ? 'selected' : '' }, children: ['All'] }] },
-              { tag: 'li', children: [{ tag: 'a', attrs: { href: '#active', class: filter === 'active' ? 'selected' : '' }, children: ['Active'] }] },
-              { tag: 'li', children: [{ tag: 'a', attrs: { href: '#completed', class: filter === 'completed' ? 'selected' : '' }, children: ['Completed'] }] }
+              {
+                tag: 'li',
+                children: [
+                  {
+                    tag: 'a',
+                    attrs: {
+                      href: '#all',
+                      class: filter === 'all' ? 'selected' : ''
+                    },
+                    children: ['All']
+                  }
+                ]
+              },
+              {
+                tag: 'li',
+                children: [
+                  {
+                    tag: 'a',
+                    attrs: {
+                      href: '#active',
+                      class: filter === 'active' ? 'selected' : ''
+                    },
+                    children: ['Active']
+                  }
+                ]
+              },
+              {
+                tag: 'li',
+                children: [
+                  {
+                    tag: 'a',
+                    attrs: {
+                      href: '#completed',
+                      class: filter === 'completed' ? 'selected' : ''
+                    },
+                    children: ['Completed']
+                  }
+                ]
+              }
             ]
           },
           {
             tag: 'button',
-            attrs: { class: 'clear-completed', style: todos.some(t => t.completed) ? '' : 'display: none' },
+            attrs: {
+              class: 'clear-completed',
+              style: { display: todos.some(t => t.completed) ? 'block' : 'none' } // ✅ Style en objet
+            },
             children: ['Clear completed'],
             events: {
-              click: () => {
+              click: () => {  // ✅ Changé 'onclick' en 'click'
                 store.update({ todos: todos.filter(t => !t.completed) });
               }
             }
@@ -149,4 +253,3 @@ export function createTodoApp(state) {
     ]
   });
 }
-

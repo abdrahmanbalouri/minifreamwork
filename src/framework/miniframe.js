@@ -3,7 +3,7 @@ export const MiniFrame = {
     return { tag, attrs, children, events };
   },
 
-  render(vNode, container, oldVNode = null) {
+  render(vNode, container, oldVNode = null) {        
     if (!oldVNode) {
       container.innerHTML = '';
       const element = this._createRealDOM(vNode);
@@ -22,21 +22,35 @@ export const MiniFrame = {
 
     const attrs = vNode.attrs || {};
     Object.keys(attrs).forEach((key) => {
+      const value = attrs[key];
+      
       if (key === 'checked' || key === 'autofocus' || key === 'selected') {
-        element[key] = !!attrs[key];
-      } else {
-        element.setAttribute(key, attrs[key]);
+        element[key] = !!value;
+      } 
+      else if (key === 'style' && typeof value === 'object') {
+        Object.assign(element.style, value);
+      }
+      else if (key === 'htmlFor') {
+        element.setAttribute('for', value);
+      }
+      else if (key === 'value') {
+        element.value = value || '';
+      }
+      else {
+        element.setAttribute(key, value);
       }
     });
 
     const events = vNode.events || {};
     Object.keys(events).forEach((eventType) => {
-      this.on(element, eventType, events[eventType]);
+      element.addEventListener(eventType, events[eventType]);
     });
 
     const children = vNode.children || [];
     children.forEach((child) => {
-      element.appendChild(this._createRealDOM(child));
+      if (child && (child.tag || typeof child === 'string' || typeof child === 'number')) {
+        element.appendChild(this._createRealDOM(child));
+      }
     });
 
     return element;
@@ -45,7 +59,9 @@ export const MiniFrame = {
   updateDOM(oldVNode, newVNode, parent) {
     if (!oldVNode || !newVNode) {
       parent.innerHTML = '';
-      if (newVNode) parent.appendChild(this._createRealDOM(newVNode));
+      if (newVNode) {
+        parent.appendChild(this._createRealDOM(newVNode));
+      }
       return;
     }
 
@@ -63,17 +79,35 @@ export const MiniFrame = {
       return;
     }
 
-    const element = parent.children[0] || parent.appendChild(document.createElement(newVNode.tag));
+    let element = parent.firstChild;
+    if (!element) {
+      element = this._createRealDOM(newVNode);
+      parent.appendChild(element);
+      return;
+    }
 
     const oldAttrs = oldVNode.attrs || {};
     const newAttrs = newVNode.attrs || {};
 
     Object.keys(newAttrs).forEach((key) => {
-      if (newAttrs[key] !== oldAttrs[key]) {
+      const oldValue = oldAttrs[key];
+      const newValue = newAttrs[key];
+
+      if (newValue !== oldValue) {
         if (key === 'checked' || key === 'autofocus') {
-          element[key] = !!newAttrs[key];
-        } else {
-          element.setAttribute(key, newAttrs[key]);
+          element[key] = !!newValue;
+        } 
+        else if (key === 'style' && typeof newValue === 'object') {
+          Object.assign(element.style, newValue);
+        }
+        else if (key === 'htmlFor') {
+          element.setAttribute('for', newValue);
+        }
+        else if (key === 'value') {
+          element.value = newValue || '';
+        }
+        else {
+          element.setAttribute(key, newValue);
         }
       }
     });
@@ -82,15 +116,31 @@ export const MiniFrame = {
       if (!(key in newAttrs)) {
         if (key === 'checked' || key === 'autofocus') {
           element[key] = false;
-        } else {
+        }
+        else if (key === 'style') {
+          element.style = '';
+        }
+        else if (key === 'htmlFor') {
+          element.removeAttribute('for');
+        }
+        else if (key === 'value') {
+          element.value = '';
+        }
+        else {
           element.removeAttribute(key);
         }
       }
     });
 
+    const oldEvents = oldVNode.events || {};
     const newEvents = newVNode.events || {};
-    Object.keys(newEvents).forEach((eventType) => {
-      this.on(element, eventType, newEvents[eventType]);
+
+    Object.keys(oldEvents).forEach(eventType => {
+      element.removeEventListener(eventType, oldEvents[eventType]);
+    });
+
+    Object.keys(newEvents).forEach(eventType => {
+      element.addEventListener(eventType, newEvents[eventType]);
     });
 
     const oldChildren = oldVNode.children || [];
@@ -98,8 +148,19 @@ export const MiniFrame = {
     const maxLength = Math.max(oldChildren.length, newChildren.length);
 
     for (let i = 0; i < maxLength; i++) {
-      const childElement = element.children[i] || element.appendChild(document.createElement('div'));
-      this.updateDOM(oldChildren[i], newChildren[i], childElement);
+      const childContainer = document.createElement('div');
+      if (element.childNodes[i]) {
+        element.replaceChild(childContainer, element.childNodes[i]);
+      } else {
+        element.appendChild(childContainer);
+      }
+      this.updateDOM(oldChildren[i], newChildren[i], childContainer);
+    }
+
+    for (let i = newChildren.length; i < oldChildren.length; i++) {
+      if (element.childNodes[i]) {
+        element.removeChild(element.childNodes[i]);
+      }
     }
   },
 
@@ -113,11 +174,9 @@ export const MiniFrame = {
         state = { ...state, ...newState };
         subscribers.forEach((cb) => cb(state));        
       },
-      subscribe: (cb) => {   
-        console.log(cb);
-             
+      subscribe: (cb) => {             
         subscribers.push(cb);
-           cb(state);
+        cb(state);
         return () => {
           subscribers = subscribers.filter((s) => s !== cb);
         };
@@ -125,42 +184,17 @@ export const MiniFrame = {
     };
   },
 
-  eventHub: {
-    events: new Map(),
-    on(element, eventType, handler) {
-      const key = `${eventType}_${element.dataset.id || Math.random().toString(36)}`;
-      this.events.set(key, { element, eventType, handler });
-      element[`on${eventType}`] = handler;
-    },
-    off(element, eventType) {
-      const key = `${eventType}_${element.dataset.id || Math.random().toString(36)}`;
-      this.events.delete(key);
-      element[`on${eventType}`] = null;
-    }
-  },
-
-  on(element, eventType, handler) {
-    this.eventHub.on(element, eventType, handler);
-  },
-
-  off(element, eventType) {
-    this.eventHub.off(element, eventType);
-  },
-
   router: {
     routes: new Map(),
     addRoute(path, renderFn) {      
-      console.log(this.routes);
-      
       this.routes.set(path, renderFn);
     },
-    start(container) {
+    start() {
       const navigate = () => {
         const path = window.location.hash || '#all';
         const renderFn = this.routes.get(path) || this.routes.get('#all');
         if (renderFn) {          
-          const vNode = renderFn();
-          MiniFrame.render(vNode, container);
+          renderFn();
         }
       };
       window.addEventListener('hashchange', navigate);
