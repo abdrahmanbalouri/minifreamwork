@@ -11,6 +11,8 @@ export function createTodoApp(state ,filter ) {
   
 
   const filteredTodos = todos.filter((todo) => {
+    console.log(filter);
+    
     if (filter === 'active') return !todo.completed;
     if (filter === 'completed') return todo.completed;
     return true;
@@ -215,8 +217,11 @@ export function createTodoApp(state ,filter ) {
                   {
                     tag: 'a',
                     attrs: {
-                      href: '#all',
+                    //  href: '/all',
                       class: filter === 'all' ? 'selected' : ''
+                    },
+                      events: {
+                      click: (e) => MiniFrame.router.go(e,'/')  // Hna sta3mel go()
                     },
                     children: ['All']
                   }
@@ -228,8 +233,11 @@ export function createTodoApp(state ,filter ) {
                   {
                     tag: 'a',
                     attrs: {
-                      href: '#active',
+                   //   href: '/active',
                       class: filter === 'active' ? 'selected' : ''
+                    },
+                      events: {
+                      click: (e) => MiniFrame.router.go(e,'/active')  // Hna sta3mel go()
                     },
                     children: ['Active']
                   }
@@ -241,8 +249,12 @@ export function createTodoApp(state ,filter ) {
                   {
                     tag: 'a',
                     attrs: {
-                      href: '#completed',
+                  //    href: '/completed',
                       class: filter === 'completed' ? 'selected' : ''
+                    },
+                      events: {
+                        
+                      click: (e) => MiniFrame.router.go(e,'/completed')  // Hna sta3mel go()
                     },
                     children: ['Completed']
                   }

@@ -16,8 +16,7 @@ store.subscribe((state) => {
   oldVNode = vNode;
 });
 
-MiniFrame.router.addRoute('#all', () => store.update({ route: 'all' }));
-MiniFrame.router.addRoute('#active', () => store.update({ route: 'active' }));
-MiniFrame.router.addRoute('#completed', () => store.update({ route: 'completed' }));
-
+MiniFrame.router.addRoute('/', () => store.update({ route: '' }));
+MiniFrame.router.addRoute('/active', () => store.update({ route: 'active' }));
+MiniFrame.router.addRoute('/completed', () => store.update({ route: 'completed' }));
 MiniFrame.router.start();

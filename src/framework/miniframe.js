@@ -113,7 +113,6 @@ export const MiniFrame = {
 
     const oldAttrs = oldVNode.attrs || {};
     const newAttrs = newVNode.attrs || {};
-    console.log(newAttrs);
     
 
     Object.keys(newAttrs).forEach(key => {      
@@ -244,14 +243,19 @@ export const MiniFrame = {
     },
     start() {
       const navigate = () => {
-        const path = window.location.hash || '#all';
-        const renderFn = this.routes.get(path) || this.routes.get('#all');
+        const path = window.location.pathname || '/';    
+        const renderFn = this.routes.get(path) || this.routes.get('/');
         if (renderFn) {
           renderFn();
         }
-      };
-      window.addEventListener('hashchange', navigate);
-      navigate();
-    }
+      };   
+      navigate()
+    },
+     go(e,routess){
+          e.preventDefault();
+          window.history.pushState({}, '', routess);
+           this.start();
+}
+    
   }
 };
