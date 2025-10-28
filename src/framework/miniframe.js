@@ -251,7 +251,7 @@ export const MiniFrame = {
       };   
       navigate()
     },
-     go(e,routess){
+     link(e,routess){
           e.preventDefault();
           window.history.pushState({}, '', routess);
            this.start();

@@ -221,7 +221,7 @@ export function createTodoApp(state ,filter ) {
                       class: filter === 'all' ? 'selected' : ''
                     },
                       events: {
-                      click: (e) => MiniFrame.router.go(e,'/')  // Hna sta3mel go()
+                      click: (e) => MiniFrame.router.link(e,'/')  
                     },
                     children: ['All']
                   }
@@ -237,7 +237,7 @@ export function createTodoApp(state ,filter ) {
                       class: filter === 'active' ? 'selected' : ''
                     },
                       events: {
-                      click: (e) => MiniFrame.router.go(e,'/active')  // Hna sta3mel go()
+                      click: (e) => MiniFrame.router.link(e,'/active')  
                     },
                     children: ['Active']
                   }
@@ -254,7 +254,7 @@ export function createTodoApp(state ,filter ) {
                     },
                       events: {
                         
-                      click: (e) => MiniFrame.router.go(e,'/completed')  // Hna sta3mel go()
+                      click: (e) => MiniFrame.router.link(e,'/completed')  
                     },
                     children: ['Completed']
                   }
