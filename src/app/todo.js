@@ -123,7 +123,6 @@ export function createTodoApp(state ,filter ) {
                     },
                     events: {
                       keydown: (e) => handleEditInput(e, todo),
-                      blur: (e) => handleEditInput(e, todo)
                     }
                   }
                 ];
