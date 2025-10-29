@@ -120,16 +120,20 @@ export function createTodoApp(state ,filter ) {
                     attrs: {
                       class: 'edit',
                       value: todo.text,
+                      autofocus: true,
                     },
                     events: {
+                      mount : (el) => {
+                        el.focus();
+                      },
                       keydown: (e) => handleEditInput(e, todo),
                     }
                   }
                 ];
-                            setTimeout(() => {
-                  const editInput = document.querySelector(`li[data-id="${todo.id}"] .edit`);
-                  if (editInput) editInput.focus();
-                }, 0);
+                //   setTimeout(() => {
+                //   const editInput = document.querySelector(`li[data-id="${todo.id}"] .edit`);
+                //   if (editInput) editInput.focus();
+                // }, 0);
 
               } else {
                 liChildren = [

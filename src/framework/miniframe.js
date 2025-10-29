@@ -65,6 +65,12 @@ export const MiniFrame = {
       }
     });
 
+    queueMicrotask(() => {
+      if (vNode.events && typeof vNode.events.mount === 'function') {
+        vNode.events.mount(element);
+      }
+    });
+
     return element;
   },
 
