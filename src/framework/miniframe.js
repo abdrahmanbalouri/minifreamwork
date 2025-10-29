@@ -243,17 +243,20 @@ export const MiniFrame = {
     },
     start() {
       const navigate = () => {
-        const path = window.location.pathname || '/';    
-        const renderFn = this.routes.get(path) || this.routes.get('/');
+        const path = window.location.hash || '/';   
+        console.log('Navigating to path:', path);
+         
+        const renderFn = this.routes.get(path.slice(1)) || this.routes.get('/');
         if (renderFn) {
           renderFn();
         }
       };   
       navigate()
+      window.addEventListener('hashchange', navigate);
     },
      link(e,routess){
           e.preventDefault();
-          window.history.pushState({}, '', routess);
+          window.history.pushState({}, '', `/#${routess}`);
            this.start();
 }
     
