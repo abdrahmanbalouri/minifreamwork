@@ -74,153 +74,162 @@ export const MiniFrame = {
     return element;
   },
 
-  updateDOM(oldVNode, newVNode, parent) {
-    if (!newVNode) {
-      if (oldVNode && oldVNode.el) parent.removeChild(oldVNode.el);
-      return;
-    }
+updateDOM(oldVNode, newVNode, parent) {
+  if (!newVNode) {
+    if (oldVNode && oldVNode.el) parent.removeChild(oldVNode.el);
+    return;
+  }
 
-    if (!oldVNode) {
-      const el = this._createRealDOM(newVNode);
-      parent.appendChild(el);
-      if (typeof newVNode === 'object') newVNode.el = el;
-      return;
-    }
+  if (!oldVNode) {
+    const el = this._createRealDOM(newVNode);
+    parent.appendChild(el);
+    if (typeof newVNode === 'object') newVNode.el = el;
+    return;
+  }
 
-    if (typeof oldVNode === 'string' || typeof newVNode === 'string' || typeof oldVNode === 'number' || typeof newVNode === 'number') {
-      if (oldVNode.toString() !== newVNode.toString()) {
-        const newEl = this._createRealDOM(newVNode);
-        const oldEl = parent.firstChild;
-
-        if (oldEl) {
-           parent.replaceChild(newEl, oldEl);
-        } else {
-           parent.appendChild(newEl);
-        }
-      }
-      return;
-    }
-    
-    if (oldVNode.tag !== newVNode.tag) {
+  // TEXT NODES
+  if (typeof oldVNode === 'string' || typeof newVNode === 'string' || typeof oldVNode === 'number' || typeof newVNode === 'number') {
+    if (oldVNode.toString() !== newVNode.toString()) {
       const newEl = this._createRealDOM(newVNode);
-      parent.replaceChild(newEl, oldVNode.el);
-      newVNode.el = newEl;
-      return;
+      const oldEl = oldVNode.el || parent.firstChild;
+      if (oldEl) {
+        parent.replaceChild(newEl, oldEl);
+      } else {
+        parent.appendChild(newEl);
+      }
     }
-    
-    const el = oldVNode.el;
-    if (!el) {
-        const newEl = this._createRealDOM(newVNode);
-        parent.replaceChild(newEl, parent.firstChild); 
-        newVNode.el = newEl;
-        return;
+    return;
+  }
+
+  // DIFFERENT TAG => REPLACE ENTIRE ELEMENT
+  if (oldVNode.tag !== newVNode.tag) {
+    const newEl = this._createRealDOM(newVNode);
+    parent.replaceChild(newEl, oldVNode.el);
+    newVNode.el = newEl;
+    return;
+  }
+
+  const el = oldVNode.el;
+  if (!el) {
+    const newEl = this._createRealDOM(newVNode);
+    parent.appendChild(newEl);
+    newVNode.el = newEl;
+    return;
+  }
+  newVNode.el = el;
+
+  // ======== UPDATE ATTRIBUTES ========
+  const oldAttrs = oldVNode.attrs || {};
+  const newAttrs = newVNode.attrs || {};
+
+  Object.keys(newAttrs).forEach((key) => {
+    const oldValue = oldAttrs[key];
+    const newValue = newAttrs[key];
+    if (oldValue !== newValue) {
+      if (key === 'checked' || key === 'autofocus' || key === 'selected') {
+        el[key] = !!newValue;
+      } else if (key === 'style' && typeof newValue === 'object') {
+        Object.assign(el.style, newValue);
+      } else if (key === 'htmlFor') {
+        el.setAttribute('for', newValue);
+      } else if (key === 'value') {
+        el.value = newValue || '';
+      } else {
+        el.setAttribute(key, newValue);
+      }
     }
-    newVNode.el = el; 
+  });
 
-    const oldAttrs = oldVNode.attrs || {};
-    const newAttrs = newVNode.attrs || {};
-    
-
-    Object.keys(newAttrs).forEach(key => {      
-      const oldValue = oldAttrs[key];
-      const newValue = newAttrs[key];
-      if (oldValue !== newValue) {
-        if (key === 'checked' || key === 'autofocus' || key === 'selected') {
-          el[key] = !!newValue;
-        } else if (key === 'style' && typeof newValue === 'object') {
-          Object.assign(el.style, newValue);
-        } else if (key === 'htmlFor') {
-          el.setAttribute('for', newValue);
-        } else if (key === 'value') {
-          el.value = newValue || '';
-        } else {
-          el.setAttribute(key, newValue);
-        }
+  Object.keys(oldAttrs).forEach((key) => {
+    if (!(key in newAttrs)) {
+      if (key === 'checked' || key === 'autofocus' || key === 'selected') {
+        el[key] = false;
+      } else if (key === 'style') {
+        el.style.cssText = '';
+      } else if (key === 'htmlFor') {
+        el.removeAttribute('for');
+      } else if (key === 'value') {
+        el.value = '';
+      } else {
+        el.removeAttribute(key);
       }
-    });
-
-    Object.keys(oldAttrs).forEach(key => {
-      if (!(key in newAttrs)) {
-        if (key === 'checked' || key === 'autofocus' || key === 'selected') {
-          el[key] = false;
-        } else if (key === 'style') {
-          el.style.cssText = '';
-        } else if (key === 'htmlFor') {
-          el.removeAttribute('for');
-        } else if (key === 'value') {
-          el.value = '';
-        } else {
-          el.removeAttribute(key);
-        }
-      }
-    });
-
-    const oldEvents = oldVNode.events || {};
-    const newEvents = newVNode.events || {};
-
-    Object.keys(oldEvents).forEach(eventType => {
-      const oldHandler = oldEvents[eventType];
-      const newHandler = newEvents[eventType];
-
-      if (!newHandler || oldHandler !== newHandler) {
-        el.removeEventListener(eventType, oldHandler);
-      }
-    });
-
-    Object.keys(newEvents).forEach(eventType => {
-      const oldHandler = oldEvents[eventType];
-      const newHandler = newEvents[eventType];
-
-      if (!oldHandler || oldHandler !== newHandler) {
-        el.addEventListener(eventType, newHandler);
-      }
-    });
-
-    const oldChildren = oldVNode.children || [];
-    const newChildren = newVNode.children || [];
-
-    const oldKeyedMap = new Map();
-    oldChildren.forEach((child, index) => {
-        const key = (typeof child === 'object' && child?.attrs?.key) || `_${index}`;
-        oldKeyedMap.set(key, child);
-    });
-
-    for (let i = 0; i < newChildren.length; i++) {
-        const newChild = newChildren[i];
-        
-        const key = (typeof newChild === 'object' && newChild?.attrs?.key) || `_${i}`;
-        let oldChild = oldKeyedMap.get(key);
-        let realDOMNode = null;
-        
-        const nextSiblingReference = this._getNextExistingElement(newChildren, oldKeyedMap, i, el);
-
-        if (oldChild) {
-            this.updateDOM(oldChild, newChild, el);
-            
-            if (typeof newChild === 'object') {
-                 realDOMNode = newChild.el;
-            } else {
-                 realDOMNode = el.childNodes[i]; 
-            }
-
-            oldKeyedMap.delete(key);
-            
-            if (realDOMNode && realDOMNode.nextSibling !== nextSiblingReference) {
-                el.insertBefore(realDOMNode, nextSiblingReference); 
-            }
-        } else {
-            realDOMNode = this._createRealDOM(newChild);
-            el.insertBefore(realDOMNode, nextSiblingReference);
-        }
     }
+  });
 
-    oldKeyedMap.forEach(oldChild => {
-        const childEl = oldChild.el;
-        if (childEl && el.contains(childEl)) {
-            el.removeChild(childEl);
-        }
-    });
-  },
+  // ======== UPDATE EVENTS WITH QUEUE ========
+  const oldEvents = oldVNode.events || {};
+  const newEvents = newVNode.events || {};
+
+  this._eventQueue = this._eventQueue || [];
+
+  // Remove outdated listeners
+  Object.keys(oldEvents).forEach((eventType) => {
+    const oldHandler = oldEvents[eventType];
+    const newHandler = newEvents[eventType];
+    if (!newHandler || oldHandler !== newHandler) {
+      this._eventQueue.push(() => el.removeEventListener(eventType, oldHandler));
+    }
+  });
+
+  // Add new listeners
+  Object.keys(newEvents).forEach((eventType) => {
+    const oldHandler = oldEvents[eventType];
+    const newHandler = newEvents[eventType];
+    if (!oldHandler || oldHandler !== newHandler) {
+      this._eventQueue.push(() => el.addEventListener(eventType, newHandler));
+    }
+  });
+
+  // Execute all event updates safely (after DOM diff)
+  queueMicrotask(() => {
+    while (this._eventQueue && this._eventQueue.length > 0) {
+      const fn = this._eventQueue.shift();
+      fn();
+    }
+  });
+
+  // ======== CHILDREN DIFFING ========
+  const oldChildren = oldVNode.children || [];
+  const newChildren = newVNode.children || [];
+
+  const oldKeyedMap = new Map();
+  oldChildren.forEach((child, index) => {
+    const key = (typeof child === 'object' && child?.attrs?.key) || `_${index}`;
+    oldKeyedMap.set(key, child);
+  });
+
+  for (let i = 0; i < newChildren.length; i++) {
+    const newChild = newChildren[i];
+    const key = (typeof newChild === 'object' && newChild?.attrs?.key) || `_${i}`;
+    let oldChild = oldKeyedMap.get(key);
+    let realDOMNode = null;
+    const nextSiblingReference = this._getNextExistingElement(newChildren, oldKeyedMap, i, el);
+
+    if (oldChild) {
+      this.updateDOM(oldChild, newChild, el);
+      if (typeof newChild === 'object') {
+        realDOMNode = newChild.el;
+      } else {
+        realDOMNode = el.childNodes[i];
+      }
+      oldKeyedMap.delete(key);
+      if (realDOMNode && realDOMNode.nextSibling !== nextSiblingReference) {
+        el.insertBefore(realDOMNode, nextSiblingReference);
+      }
+    } else {
+      realDOMNode = this._createRealDOM(newChild);
+      el.insertBefore(realDOMNode, nextSiblingReference);
+    }
+  }
+
+  oldKeyedMap.forEach((oldChild) => {
+    const childEl = oldChild.el;
+    if (childEl && el.contains(childEl)) {
+      el.removeChild(childEl);
+    }
+  });
+}
+,
 
   createStore(initialState) {
     let state = { ...initialState };

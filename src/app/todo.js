@@ -2,32 +2,32 @@ import { MiniFrame } from '../framework/miniframe.js';
 
 export const store = MiniFrame.createStore({
   todos: [],
-  editingId: null ,
-  route : "all"
+  editingId: null,
+  route: "all"
 });
 
-export function createTodoApp(state ,filter ) {
-  const { todos, editingId  } = state; 
-  
+export function createTodoApp(state, filter) {
+  const { todos, editingId } = state;
+
 
   const filteredTodos = todos.filter((todo) => {
     console.log(filter);
-    
+
     if (filter === 'active') return !todo.completed;
     if (filter === 'completed') return todo.completed;
     return true;
   });
-  
+
   const handleEditInput = (e, todo) => {
     if (e.key === 'Enter' || e.type === 'blur') {
       const newText = e.target.value.trim();
-      
+
       if (newText) {
         store.update({
           todos: todos.map(t =>
             t.id === todo.id ? { ...t, text: newText } : t
           ),
-          editingId: null 
+          editingId: null
         });
       } else if (e.type === 'blur') {
         store.update({
@@ -57,14 +57,14 @@ export function createTodoApp(state ,filter ) {
               autofocus: true
             },
             events: {
-              keydown: (e) => {  
+              keydown: (e) => {
                 if (e.key === 'Enter' && e.target.value.trim()) {
                   store.update({
                     todos: [
                       ...todos,
                       {
                         id: Date.now(),
-                        text: e.target.value.trim(),  
+                        text: e.target.value.trim(),
                         completed: false
                       }
                     ]
@@ -80,7 +80,7 @@ export function createTodoApp(state ,filter ) {
         tag: 'section',
         attrs: {
           class: 'main',
-          style: { display: todos.length ? 'block' : 'none' } 
+          style: { display: todos.length ? 'block' : 'none' }
         },
         children: [
           {
@@ -101,18 +101,18 @@ export function createTodoApp(state ,filter ) {
           },
           {
             tag: 'label',
-            attrs: { htmlFor: 'toggle-all' }, 
+            attrs: { htmlFor: 'toggle-all' },
             children: ['Mark all as complete']
           },
           {
             tag: 'ul',
             attrs: { class: 'todo-list' },
             children: filteredTodos.map(todo => {
-              
-              const isEditing = todo.id === editingId; 
-              
+
+              const isEditing = todo.id === editingId;
+
               let liChildren;
-              
+
               if (isEditing) {
                 liChildren = [
                   {
@@ -123,17 +123,15 @@ export function createTodoApp(state ,filter ) {
                       autofocus: true,
                     },
                     events: {
-                      mount : (el) => {
+                      mount: (el) => {
                         el.focus();
                       },
                       keydown: (e) => handleEditInput(e, todo),
+                      //keydown: (e) => handleEditInput(e, todo),
+
                     }
                   }
-                ];
-                //   setTimeout(() => {
-                //   const editInput = document.querySelector(`li[data-id="${todo.id}"] .edit`);
-                //   if (editInput) editInput.focus();
-                // }, 0);
+                ];      
 
               } else {
                 liChildren = [
@@ -182,17 +180,17 @@ export function createTodoApp(state ,filter ) {
                   }
                 ];
               }
-              
+
               return MiniFrame.createElement({
                 tag: 'li',
                 attrs: {
                   class: `${todo.completed ? 'completed' : ''} ${isEditing ? 'editing' : ''}`,
                   'data-id': todo.id,
-                  key: todo.id 
+                  key: todo.id
                 },
                 children: liChildren
               });
-            }) 
+            })
           }
         ]
       },
@@ -220,11 +218,11 @@ export function createTodoApp(state ,filter ) {
                   {
                     tag: 'a',
                     attrs: {
-                    //  href: '/all',
+                      //  href: '/all',
                       class: filter === 'all' ? 'selected' : ''
                     },
-                      events: {
-                      click: (e) => MiniFrame.router.link(e,'')  
+                    events: {
+                      click: (e) => MiniFrame.router.link(e, '')
                     },
                     children: ['All']
                   }
@@ -236,11 +234,11 @@ export function createTodoApp(state ,filter ) {
                   {
                     tag: 'a',
                     attrs: {
-                   //   href: '/active',
+                      //   href: '/active',
                       class: filter === 'active' ? 'selected' : ''
                     },
-                      events: {
-                      click: (e) => MiniFrame.router.link(e,'active')  
+                    events: {
+                      click: (e) => MiniFrame.router.link(e, 'active')
                     },
                     children: ['Active']
                   }
@@ -252,12 +250,12 @@ export function createTodoApp(state ,filter ) {
                   {
                     tag: 'a',
                     attrs: {
-                  //    href: '/completed',
+                      //    href: '/completed',
                       class: filter === 'completed' ? 'selected' : ''
                     },
-                      events: {
-                        
-                      click: (e) => MiniFrame.router.link(e,'completed')  
+                    events: {
+
+                      click: (e) => MiniFrame.router.link(e, 'completed')
                     },
                     children: ['Completed']
                   }
@@ -273,7 +271,7 @@ export function createTodoApp(state ,filter ) {
             },
             children: ['Clear completed'],
             events: {
-              click: () => {  
+              click: () => {
                 store.update({ todos: todos.filter(t => !t.completed) });
               }
             }
