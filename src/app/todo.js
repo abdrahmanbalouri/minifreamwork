@@ -20,24 +20,21 @@ export function createTodoApp(state, filter) {
 
   const handleEditInput = (e, todo) => {
     if (e.key === 'Enter' || e.type === 'blur') {
-      const newText = e.target.value.trim();
+      if (e.target.value.trim().length>1){
 
-      if (newText) {
-        store.update({
-          todos: todos.map(t =>
-            t.id === todo.id ? { ...t, text: newText } : t
-          ),
-          editingId: null
-        });
-      } else if (e.type === 'blur') {
-        store.update({
-          todos: todos.filter(t => t.id !== todo.id),
-          editingId: null
-        });
+        const newText = e.target.value.trim();
+        if (newText) {
+          store.update({
+            todos: todos.map(t =>
+              t.id === todo.id ? { ...t, text: newText } : t
+            ),
+            editingId: null
+          });
       }
-    } else if (e.key === 'Escape') {
-      store.update({ editingId: null });
     }
+
+      
+    } 
   };
 
   return MiniFrame.createElement({
@@ -58,7 +55,7 @@ export function createTodoApp(state, filter) {
             },
             events: {
               keydown: (e) => {
-                if (e.key === 'Enter' && e.target.value.trim()) {
+                if (e.key === 'Enter' && e.target.value.trim().length>1) {
                   store.update({
                     todos: [
                       ...todos,
